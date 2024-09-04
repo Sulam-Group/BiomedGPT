@@ -1,0 +1,3 @@
+[submodule "BiomedGPT"]
+	path = BiomedGPT
+	url = https://github.com/Sulam-Group/BiomedGPT.git
