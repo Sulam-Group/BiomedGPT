@@ -17,10 +17,10 @@ import string
 from fairseq import metrics, utils
 from fairseq.tasks import register_task
 
-from tasks.ofa_task import OFATask, OFAConfig
-from data.mm_data.caption_dataset import CaptionDataset
-from data.file_dataset import FileDataset
-from utils.cider.pyciderevalcap.ciderD.ciderD import CiderD
+from biomedgpt.tasks.ofa_task import OFATask, OFAConfig
+from biomedgpt.data.mm_data.caption_dataset import CaptionDataset
+from biomedgpt.data.file_dataset import FileDataset
+from biomedgpt.utils.cider.pyciderevalcap.ciderD.ciderD import CiderD
 
 EVAL_BLEU_ORDER = 4
 

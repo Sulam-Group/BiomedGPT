@@ -17,10 +17,10 @@ from torchvision import transforms
 
 from PIL import Image, ImageFile
 
-from data import data_utils
-from data.ofa_dataset import OFADataset
-from utils.vision_helper import RandomAugment
-import utils.transforms as T
+from biomedgpt.data import data_utils
+from biomedgpt.data.ofa_dataset import OFADataset
+from biomedgpt.utils.vision_helper import RandomAugment
+import biomedgpt.utils.transforms as T
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 ImageFile.MAX_IMAGE_PIXELS = None

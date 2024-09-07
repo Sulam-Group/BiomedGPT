@@ -14,12 +14,12 @@ import torch
 import base64
 from torchvision import transforms
 from timm.data import create_transform
-from utils.vision_helper import RandomAugment
+from biomedgpt.utils.vision_helper import RandomAugment
 
 from PIL import Image, ImageFile
 
-from data import data_utils
-from data.ofa_dataset import OFADataset
+from biomedgpt.data import data_utils
+from biomedgpt.data.ofa_dataset import OFADataset
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 ImageFile.MAX_IMAGE_PIXELS = None

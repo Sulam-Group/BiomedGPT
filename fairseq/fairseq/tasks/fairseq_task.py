@@ -92,6 +92,7 @@ class FairseqTask(object):
         Args:
             filename (str): the filename
         """
+        print(filename)
         return Dictionary.load(filename)
 
     @classmethod

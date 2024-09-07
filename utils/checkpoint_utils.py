@@ -27,7 +27,7 @@ from fairseq.file_io import PathManager
 from fairseq.models import FairseqDecoder, FairseqEncoder
 from omegaconf import DictConfig, open_dict, OmegaConf
 
-from data import data_utils
+from biomedgpt.data import data_utils
 
 logger = logging.getLogger(__name__)
 
