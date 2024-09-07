@@ -5,6 +5,7 @@
 
 import numpy as np
 import torch
+
 from fairseq.data import data_utils
 
 
@@ -297,7 +298,6 @@ class NoisingDataset(torch.utils.data.Dataset):
             )
         )
         self.sizes = src_dataset.sizes
-
 
     def __getitem__(self, index):
         """

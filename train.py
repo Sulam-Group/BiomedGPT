@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 -u
-# Copyright 2022 The OFA-Sys Team. 
+# Copyright 2022 The OFA-Sys Team.
 # All rights reserved.
-# This source code is licensed under the Apache 2.0 license 
+# This source code is licensed under the Apache 2.0 license
 # found in the LICENSE file in the root directory.
 
 """
@@ -13,11 +13,11 @@ import logging
 import math
 import os
 import sys
-from typing import Dict, Optional, Any, List, Tuple, Callable
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # We need to setup root logger before importing any fairseq libraries.
 logging.basicConfig(
-    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s',
+    format="%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     level=os.environ.get("LOGLEVEL", "INFO").upper(),
     stream=sys.stdout,
@@ -26,26 +26,22 @@ logger = logging.getLogger("fairseq_cli.train")
 
 import numpy as np
 import torch
-from fairseq import (
-    # checkpoint_utils,
-    options,
-    quantization_utils,
-    tasks,
-    utils,
-)
+
+# from fairseq.trainer import Trainer
+from omegaconf import DictConfig, OmegaConf
+
+from fairseq import options, quantization_utils, tasks, utils  # checkpoint_utils,
 from fairseq.data import iterators
 from fairseq.data.plasma_utils import PlasmaStore
 from fairseq.dataclass.configs import FairseqConfig
 from fairseq.dataclass.utils import convert_namespace_to_omegaconf
-from fairseq.distributed import fsdp_enable_wrap, fsdp_wrap, utils as distributed_utils
+from fairseq.distributed import fsdp_enable_wrap, fsdp_wrap
+from fairseq.distributed import utils as distributed_utils
 from fairseq.file_io import PathManager
 from fairseq.logging import meters, metrics, progress_bar
 from fairseq.model_parallel.megatron_trainer import MegatronTrainer
-# from fairseq.trainer import Trainer
-from omegaconf import DictConfig, OmegaConf
-
-from utils import checkpoint_utils
 from trainer import Trainer
+from utils import checkpoint_utils
 
 
 def main(cfg: FairseqConfig) -> None:
@@ -54,7 +50,10 @@ def main(cfg: FairseqConfig) -> None:
 
     utils.import_user_module(cfg.common)
 
-    if distributed_utils.is_master(cfg.distributed_training) and "job_logging_cfg" in cfg:
+    if (
+        distributed_utils.is_master(cfg.distributed_training)
+        and "job_logging_cfg" in cfg
+    ):
         # make hydra logging work with ddp (see # see https://github.com/facebookresearch/hydra/issues/1126)
         logging.config.dictConfig(OmegaConf.to_container(cfg.job_logging_cfg))
 
@@ -97,11 +96,13 @@ def main(cfg: FairseqConfig) -> None:
             model = fsdp_wrap(task.build_model(cfg.model))
     else:
         model = task.build_model(cfg.model)
-    
+
     # bitfit
     if cfg.model.bitfit:
         for name, param in model.named_parameters():
-            if ("layer_norm" in name and "bias" in name) or ("fc" in name and "bias" in name):
+            if ("layer_norm" in name and "bias" in name) or (
+                "fc" in name and "bias" in name
+            ):
                 param.requires_grad = True
             else:
                 param.requires_grad = False
@@ -113,15 +114,25 @@ def main(cfg: FairseqConfig) -> None:
     logger.info("criterion: {}".format(criterion.__class__.__name__))
     logger.info(
         "num. shared model params: {:,} (num. trained: {:,})".format(
-            sum(p.numel() for p in model.parameters() if not getattr(p, "expert", False)),
-            sum(p.numel() for p in model.parameters() if not getattr(p, "expert", False) and p.requires_grad)
+            sum(
+                p.numel() for p in model.parameters() if not getattr(p, "expert", False)
+            ),
+            sum(
+                p.numel()
+                for p in model.parameters()
+                if not getattr(p, "expert", False) and p.requires_grad
+            ),
         )
     )
 
     logger.info(
         "num. expert model params: {} (num. trained: {})".format(
             sum(p.numel() for p in model.parameters() if getattr(p, "expert", False)),
-            sum(p.numel() for p in model.parameters() if getattr(p, "expert", False) and p.requires_grad),
+            sum(
+                p.numel()
+                for p in model.parameters()
+                if getattr(p, "expert", False) and p.requires_grad
+            ),
         )
     )
 
@@ -171,14 +182,15 @@ def main(cfg: FairseqConfig) -> None:
     )
     if cfg.common.tpu:
         import torch_xla.core.xla_model as xm
+
         xm.rendezvous("load_checkpoint")  # wait for all workers
 
     max_epoch = cfg.optimization.max_epoch or math.inf
     if max_epoch > 0 and max_epoch != math.inf:
         total_num_updates = sum(
             math.ceil(len(epoch_itr) / cfg.optimization.update_freq[i])
-            if i < len(cfg.optimization.update_freq) else
-            math.ceil(len(epoch_itr) / cfg.optimization.update_freq[-1])
+            if i < len(cfg.optimization.update_freq)
+            else math.ceil(len(epoch_itr) / cfg.optimization.update_freq[-1])
             for i in range(max_epoch)
         )
         trainer.lr_reinit(total_num_updates, trainer.get_num_updates())
@@ -395,15 +407,19 @@ def validate_and_save(
         )
     )
     do_validate = (
-        (not end_of_epoch and do_save)  # validate during mid-epoch saves
-        or (end_of_epoch and epoch_itr.epoch % cfg.dataset.validate_interval == 0)
-        or should_stop
-        or (
-            cfg.dataset.validate_interval_updates > 0
-            and num_updates > 0
-            and num_updates % cfg.dataset.validate_interval_updates == 0
+        (
+            (not end_of_epoch and do_save)  # validate during mid-epoch saves
+            or (end_of_epoch and epoch_itr.epoch % cfg.dataset.validate_interval == 0)
+            or should_stop
+            or (
+                cfg.dataset.validate_interval_updates > 0
+                and num_updates > 0
+                and num_updates % cfg.dataset.validate_interval_updates == 0
+            )
         )
-    ) and not cfg.dataset.disable_validation and num_updates >= cfg.dataset.validate_after_updates
+        and not cfg.dataset.disable_validation
+        and num_updates >= cfg.dataset.validate_after_updates
+    )
 
     # Validate
     valid_losses = [None]
@@ -476,12 +492,15 @@ def validate(
         # don't pollute other aggregators (e.g., train meters)
         with metrics.aggregate(new_root=True) as agg:
             for i, sample in enumerate(progress):
-                if cfg.dataset.max_valid_steps is not None and i > cfg.dataset.max_valid_steps:
+                if (
+                    cfg.dataset.max_valid_steps is not None
+                    and i > cfg.dataset.max_valid_steps
+                ):
                     break
                 trainer.valid_step(sample)
 
         # log validation stats
-        if hasattr(task, 'get_valid_stats'):
+        if hasattr(task, "get_valid_stats"):
             stats = task.get_valid_stats(cfg, trainer, agg.get_smoothed_values())
         else:
             stats = agg.get_smoothed_values()
@@ -520,7 +539,9 @@ def cli_main(
 
     if cfg.common.use_plasma_view:
         server = PlasmaStore(path=cfg.common.plasma_path)
-        logger.info(f"Started plasma server pid {server.server.pid} {cfg.common.plasma_path}")
+        logger.info(
+            f"Started plasma server pid {server.server.pid} {cfg.common.plasma_path}"
+        )
 
     if args.profile:
         with torch.cuda.profiler.profile():

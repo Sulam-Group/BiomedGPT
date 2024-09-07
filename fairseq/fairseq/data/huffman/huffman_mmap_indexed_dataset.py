@@ -12,6 +12,7 @@ from functools import lru_cache
 
 import numpy as np
 import torch
+
 from fairseq.data import indexed_dataset
 from fairseq.data.huffman import HuffmanCoder
 from fairseq.file_io import PathManager

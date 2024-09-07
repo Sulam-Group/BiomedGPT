@@ -3,23 +3,20 @@
 # This source code is licensed under the Apache 2.0 license
 # found in the LICENSE file in the root directory.
 
+import base64
+import functools
+import logging
+import random
+import unicodedata
+import warnings
 from io import BytesIO
 
-import logging
-import warnings
-import random
-import functools
-
 import torch
-import base64
+from PIL import Image, ImageFile
 from torchvision import transforms
 from torchvision.transforms import InterpolationMode
 from torchvision.transforms import functional as F
-
-from PIL import Image, ImageFile
-
 from zhconv import convert
-import unicodedata
 
 from data import data_utils
 from data.ofa_dataset import OFADataset
@@ -48,16 +45,20 @@ def collate(samples, pad_idx, eos_idx):
 
     id = np.array([s["id"] for s in samples])
     src_tokens = merge("source")
-    src_lengths = torch.LongTensor([s["source"].ne(pad_idx).long().sum() for s in samples])
+    src_lengths = torch.LongTensor(
+        [s["source"].ne(pad_idx).long().sum() for s in samples]
+    )
 
-    patch_images = torch.stack([sample['patch_image'] for sample in samples], dim=0)
-    patch_masks = torch.cat([sample['patch_mask'] for sample in samples])
+    patch_images = torch.stack([sample["patch_image"] for sample in samples], dim=0)
+    patch_masks = torch.cat([sample["patch_mask"] for sample in samples])
 
     prev_output_tokens = None
     target = None
     if samples[0].get("target", None) is not None:
         target = merge("target")
-        tgt_lengths = torch.LongTensor([s["target"].ne(pad_idx).long().sum() for s in samples])
+        tgt_lengths = torch.LongTensor(
+            [s["target"].ne(pad_idx).long().sum() for s in samples]
+        )
         ntokens = tgt_lengths.sum().item()
 
         if samples[0].get("prev_output_tokens", None) is not None:
@@ -74,7 +75,7 @@ def collate(samples, pad_idx, eos_idx):
             "src_lengths": src_lengths,
             "patch_images": patch_images,
             "patch_masks": patch_masks,
-            "prev_output_tokens": prev_output_tokens
+            "prev_output_tokens": prev_output_tokens,
         },
         "target": target,
     }
@@ -159,9 +160,9 @@ class OcrDataset(OFADataset):
         )
 
         self.bpe = bpe
-        if type(bpe).__name__ == 'GPT2BPE':
+        if type(bpe).__name__ == "GPT2BPE":
             self.prompt = " what are the texts on the image?"
-        elif type(bpe).__name__ == 'BertBPE':
+        elif type(bpe).__name__ == "BertBPE":
             self.prompt = "图片上的文字是什么?"
 
     def __getitem__(self, index):
@@ -172,10 +173,10 @@ class OcrDataset(OFADataset):
         patch_mask = torch.tensor([True])
 
         caption = unicodedata.normalize("NFKC", convert(caption, "zh-hans"))
-        if type(self.bpe).__name__ == 'GPT2BPE':
+        if type(self.bpe).__name__ == "GPT2BPE":
             caption_token_list = caption.lower().strip().split()
-            tgt_caption = ' '.join(caption_token_list[:self.max_tgt_length])
-        elif type(self.bpe).__name__ == 'BertBPE':
+            tgt_caption = " ".join(caption_token_list[: self.max_tgt_length])
+        elif type(self.bpe).__name__ == "BertBPE":
             tgt_caption = caption[: self.max_tgt_length].lower()
         src_item = self.encode_text(self.prompt)
         tgt_item = self.encode_text(" {}".format(tgt_caption))

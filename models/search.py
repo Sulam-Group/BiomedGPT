@@ -1,6 +1,6 @@
-# Copyright 2022 The OFA-Sys Team. 
+# Copyright 2022 The OFA-Sys Team.
 # All rights reserved.
-# This source code is licensed under the Apache 2.0 license 
+# This source code is licensed under the Apache 2.0 license
 # found in the LICENSE file in the root directory.
 
 import math
@@ -8,12 +8,13 @@ from typing import List, Optional
 
 import torch
 import torch.nn as nn
+from torch import Tensor
+
 from fairseq.token_generation_constraints import (
     ConstraintState,
     OrderedConstraintState,
     UnorderedConstraintState,
 )
-from torch import Tensor
 
 
 class Search(nn.Module):

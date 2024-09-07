@@ -11,6 +11,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from fairseq import utils
 from fairseq.data.data_utils import compute_mask_indices
 from fairseq.dataclass import ChoiceEnum, FairseqDataclass
@@ -27,7 +28,6 @@ from fairseq.modules import (
 )
 from fairseq.modules.transformer_sentence_encoder import init_bert_params
 from fairseq.utils import buffered_arange, index_put, is_xla_tensor
-
 
 EXTRACTOR_MODE_CHOICES = ChoiceEnum(["default", "layer_norm"])
 MASKING_DISTRIBUTION_CHOICES = ChoiceEnum(["static", "uniform", "normal", "poisson"])
@@ -484,7 +484,7 @@ class Wav2Vec2Model(BaseFairseqModel):
         logits = logits / self.logit_temp
 
         if is_xla_tensor(logits) or neg_is_pos.any():
-            fillval = -float(2 ** 30)
+            fillval = -float(2**30)
             if not hasattr(self, "_inftensor"):
                 self._inftensor = (
                     torch.tensor(fillval).to(x.device)

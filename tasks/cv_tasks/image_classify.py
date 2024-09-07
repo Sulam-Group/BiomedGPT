@@ -3,23 +3,23 @@
 # This source code is licensed under the Apache 2.0 license
 # found in the LICENSE file in the root directory.
 
-from dataclasses import dataclass, field
 import json
 import logging
-import os
 import math
+import os
 import pickle
+from dataclasses import dataclass, field
 from typing import Optional
-from biomedgpt.data.file_dataset import FileDataset
 
 import torch
-from fairseq import metrics
-from fairseq.tasks import register_task
 
-from biomedgpt.data.cv_data.image_classify_dataset import ImageClassifyDataset
 from biomedgpt.data import data_utils
+from biomedgpt.data.cv_data.image_classify_dataset import ImageClassifyDataset
+from biomedgpt.data.file_dataset import FileDataset
 from biomedgpt.tasks.ofa_task import OFAConfig, OFATask
 from biomedgpt.utils.trie import Trie
+from fairseq import metrics
+from fairseq.tasks import register_task
 
 logger = logging.getLogger(__name__)
 

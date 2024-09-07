@@ -8,6 +8,8 @@ from typing import Dict, List, Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
+
 from fairseq import utils
 from fairseq.models import (
     FairseqEncoder,
@@ -17,8 +19,6 @@ from fairseq.models import (
     register_model_architecture,
 )
 from fairseq.modules import AdaptiveSoftmax, FairseqDropout
-from torch import Tensor
-
 
 DEFAULT_MAX_SOURCE_POSITIONS = 1e5
 DEFAULT_MAX_TARGET_POSITIONS = 1e5
@@ -225,10 +225,10 @@ class LSTMEncoder(FairseqEncoder):
         super().__init__(dictionary)
         self.num_layers = num_layers
         self.dropout_in_module = FairseqDropout(
-            dropout_in*1.0, module_name=self.__class__.__name__
+            dropout_in * 1.0, module_name=self.__class__.__name__
         )
         self.dropout_out_module = FairseqDropout(
-            dropout_out*1.0, module_name=self.__class__.__name__
+            dropout_out * 1.0, module_name=self.__class__.__name__
         )
         self.bidirectional = bidirectional
         self.hidden_size = hidden_size
@@ -329,7 +329,9 @@ class LSTMEncoder(FairseqEncoder):
         out = outs.view(self.num_layers, 2, bsz, -1).transpose(1, 2).contiguous()
         return out.view(self.num_layers, bsz, -1)
 
-    def reorder_encoder_out(self, encoder_out: Tuple[Tensor, Tensor, Tensor, Tensor], new_order):
+    def reorder_encoder_out(
+        self, encoder_out: Tuple[Tensor, Tensor, Tensor, Tensor], new_order
+    ):
         return tuple(
             (
                 encoder_out[0].index_select(1, new_order),
@@ -402,10 +404,10 @@ class LSTMDecoder(FairseqIncrementalDecoder):
     ):
         super().__init__(dictionary)
         self.dropout_in_module = FairseqDropout(
-            dropout_in*1.0, module_name=self.__class__.__name__
+            dropout_in * 1.0, module_name=self.__class__.__name__
         )
         self.dropout_out_module = FairseqDropout(
-            dropout_out*1.0, module_name=self.__class__.__name__
+            dropout_out * 1.0, module_name=self.__class__.__name__
         )
         self.hidden_size = hidden_size
         self.share_input_output_embed = share_input_output_embed

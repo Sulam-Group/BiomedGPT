@@ -3,13 +3,13 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-from dataclasses import dataclass, field
 import logging
 import os
-
-from omegaconf import MISSING, II, OmegaConf
+from dataclasses import dataclass, field
 
 import numpy as np
+from omegaconf import II, MISSING, OmegaConf
+
 from fairseq import utils
 from fairseq.data import (
     Dictionary,
@@ -30,7 +30,6 @@ from fairseq.dataclass import FairseqDataclass
 from fairseq.tasks import FairseqTask, register_task
 
 from .language_modeling import SAMPLE_BREAK_MODE_CHOICES, SHORTEN_METHOD_CHOICES
-
 
 logger = logging.getLogger(__name__)
 

@@ -12,11 +12,11 @@ from typing import Any, List
 import torch
 import torch.distributed as dist
 import torch.optim
+from omegaconf import II, OmegaConf
+
 from fairseq.dataclass import FairseqDataclass
 from fairseq.optim import FairseqOptimizer, register_optimizer
 from fairseq.optim.fused_adam import get_fused_adam_class
-from omegaconf import II, OmegaConf
-
 
 logger = logging.getLogger(__name__)
 
@@ -67,13 +67,13 @@ class FairseqAdam(FairseqOptimizer):
         elif use_fused_adam:
             logger.info("using FusedAdam")
             self._optimizer = fused_adam_cls(
-                params,
-                use_fp16_stats=self.cfg.fp16_adam_stats,
-                **self.optimizer_config
+                params, use_fp16_stats=self.cfg.fp16_adam_stats, **self.optimizer_config
             )
         else:
             if self.cfg.fp16_adam_stats:
-                raise NotImplementedError("--fp16-adam-stats is only supported with FusedAdamV1")
+                raise NotImplementedError(
+                    "--fp16-adam-stats is only supported with FusedAdamV1"
+                )
             self._optimizer = Adam(params, **self.optimizer_config)
 
     @property

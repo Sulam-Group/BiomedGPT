@@ -9,6 +9,7 @@ from collections import Counter, deque
 from dataclasses import dataclass
 
 from bitarray import bitarray, util
+
 from fairseq.data import Dictionary
 
 # basically we have to write to addressable bytes for the memory mapped
@@ -140,7 +141,9 @@ class HuffmanNode:
     def is_leaf(self) -> bool:
         return self.left is None and self.right is None
 
-    def code_table(self, prefix: tp.Optional[bitarray] = None) -> tp.Dict[str, "HuffmanNode"]:
+    def code_table(
+        self, prefix: tp.Optional[bitarray] = None
+    ) -> tp.Dict[str, "HuffmanNode"]:
         defaulted_prefix = prefix if prefix is not None else bitarray()
         if self.is_leaf():
             self.code = (

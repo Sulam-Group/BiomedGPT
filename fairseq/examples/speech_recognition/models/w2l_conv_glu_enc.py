@@ -10,6 +10,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from fairseq.models import (
     FairseqEncoder,
     FairseqEncoderModel,
@@ -17,7 +18,6 @@ from fairseq.models import (
     register_model_architecture,
 )
 from fairseq.modules.fairseq_dropout import FairseqDropout
-
 
 default_conv_enc_config = """[
     (400, 13, 170, 0.2),

@@ -1,29 +1,27 @@
-# Copyright 2022 The OFA-Sys Team. 
+# Copyright 2022 The OFA-Sys Team.
 # All rights reserved.
 # This source code is licensed under the Apache 2.0 license
 # found in the LICENSE file in the root directory.
 
-from dataclasses import dataclass, field
 import json
 import logging
-import os
 import math
+import os
+from dataclasses import dataclass, field
 from typing import Optional
-from fairseq.tasks import register_task
-from fairseq.data import FairseqDataset, iterators
 
-from biomedgpt.tasks.ofa_task import OFATask, OFAConfig
-from biomedgpt.data.pretrain_data.unify_dataset import UnifyDataset
 from biomedgpt.data.file_dataset import FileDataset
+from biomedgpt.data.pretrain_data.unify_dataset import UnifyDataset
+from biomedgpt.tasks.ofa_task import OFAConfig, OFATask
+from fairseq.data import FairseqDataset, iterators
+from fairseq.tasks import register_task
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class UnifyConfig(OFAConfig):
-    max_image_size: int = field(
-        default=512, metadata={"help": ""}
-    )
+    max_image_size: int = field(default=512, metadata={"help": ""})
     text_data: Optional[str] = field(
         default=None,
         metadata={"help": "pure text data"},
@@ -50,12 +48,17 @@ class UnifyConfig(OFAConfig):
     )
     neg_sample_dir: Optional[str] = field(
         default=None,
-        metadata={"help": "negative sample directory, which contains captions (taken from all image-text pairs), "
-                          "answers (taken from VQA), "
-                          "objects (taken form OpenImages) "},
+        metadata={
+            "help": "negative sample directory, which contains captions (taken from all image-text pairs), "
+            "answers (taken from VQA), "
+            "objects (taken form OpenImages) "
+        },
     )
     code_image_size: int = field(
-        default=128, metadata={"help": "the resolution of the generated image in the image infilling task"}
+        default=128,
+        metadata={
+            "help": "the resolution of the generated image in the image infilling task"
+        },
     )
 
     pretrain_seed: int = field(
@@ -85,7 +88,9 @@ class UnifyConfig(OFAConfig):
     )
     replace_length: int = field(
         default=1,
-        metadata={"help": "when masking N tokens, replace with 0, 1, or N tokens (use -1 for N)"},
+        metadata={
+            "help": "when masking N tokens, replace with 0, 1, or N tokens (use -1 for N)"
+        },
     )
 
 
@@ -94,19 +99,25 @@ class UnifyTask(OFATask):
     def __init__(self, cfg: UnifyConfig, src_dict, tgt_dict):
         super().__init__(cfg, src_dict, tgt_dict)
 
-        self.type2ans_dict = json.load(open(os.path.join(self.cfg.neg_sample_dir, 'type2ans.json')))
+        self.type2ans_dict = json.load(
+            open(os.path.join(self.cfg.neg_sample_dir, "type2ans.json"))
+        )
         self.ans2type_dict = {}
         for type, answer_list in self.type2ans_dict.items():
-            if type == 'other':
+            if type == "other":
                 continue
             for answer in answer_list:
                 self.ans2type_dict[answer] = type
 
         self.all_object_list = [
-            row.strip() for row in open(os.path.join(self.cfg.neg_sample_dir, 'object.txt')) if row.strip() != ''
+            row.strip()
+            for row in open(os.path.join(self.cfg.neg_sample_dir, "object.txt"))
+            if row.strip() != ""
         ]
         self.all_caption_list = [
-            row.strip() for row in open(os.path.join(self.cfg.neg_sample_dir, 'all_captions.txt')) if row.strip() != ''
+            row.strip()
+            for row in open(os.path.join(self.cfg.neg_sample_dir, "all_captions.txt"))
+            if row.strip() != ""
         ]
 
         self.pure_text_dataset = None
@@ -115,14 +126,20 @@ class UnifyTask(OFATask):
         self.cfg.detection_data = None
         self.cfg.text_data = None
         if self.cfg.text_data is not None:
-            self.pure_text_dataset = FileDataset(self.cfg.text_data, self.cfg.text_selected_cols)
+            self.pure_text_dataset = FileDataset(
+                self.cfg.text_data, self.cfg.text_selected_cols
+            )
         if self.cfg.image_data is not None:
-            self.pure_image_dataset = FileDataset(self.cfg.image_data, self.cfg.image_selected_cols)
+            self.pure_image_dataset = FileDataset(
+                self.cfg.image_data, self.cfg.image_selected_cols
+            )
         if self.cfg.detection_data is not None:
-            self.detection_dataset = FileDataset(self.cfg.detection_data, self.cfg.detection_selected_cols)
+            self.detection_dataset = FileDataset(
+                self.cfg.detection_data, self.cfg.detection_selected_cols
+            )
 
     def load_dataset(self, split, epoch=1, combine=False, **kwargs):
-        paths = self.cfg.data.split(',')
+        paths = self.cfg.data.split(",")
         assert len(paths) > 0
 
         file_path = paths[(epoch - 1) % (len(paths))]
@@ -154,9 +171,9 @@ class UnifyTask(OFATask):
             keep_ratio=self.cfg.keep_ratio,
             mask_length=self.cfg.mask_length,
             poisson_lambda=self.cfg.poisson_lambda,
-            replace_length=self.cfg.replace_length
+            replace_length=self.cfg.replace_length,
         )
-   
+
     def get_batch_iterator(
         self,
         dataset,
@@ -198,7 +215,7 @@ class UnifyTask(OFATask):
             shard_id=0,
             num_workers=num_workers,
             epoch=epoch,
-            buffer_size=data_buffer_size
+            buffer_size=data_buffer_size,
         )
 
         return epoch_iter

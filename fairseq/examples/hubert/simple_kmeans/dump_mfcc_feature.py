@@ -10,8 +10,7 @@ import sys
 import soundfile as sf
 import torch
 import torchaudio
-
-from feature_utils import get_path_iterator, dump_feature
+from feature_utils import dump_feature, get_path_iterator
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
@@ -59,7 +58,6 @@ def main(tsv_dir, split, nshard, rank, feat_dir, sample_rate):
     reader = MfccFeatureReader(sample_rate)
     generator, num = get_path_iterator(f"{tsv_dir}/{split}.tsv", nshard, rank)
     dump_feature(reader, generator, num, split, nshard, rank, feat_dir)
-
 
 
 if __name__ == "__main__":
