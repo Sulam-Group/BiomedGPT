@@ -12,6 +12,7 @@ import os
 import re
 import time
 import traceback
+from argparse import Namespace
 from collections import OrderedDict
 from typing import Any, Dict, Optional, Union
 
@@ -29,6 +30,7 @@ from fairseq.distributed.fully_sharded_data_parallel import FSDP, has_FSDP
 from fairseq.file_io import PathManager
 from fairseq.models import FairseqDecoder, FairseqEncoder
 
+torch.serialization.add_safe_globals([Namespace])
 logger = logging.getLogger(__name__)
 
 
@@ -326,7 +328,7 @@ def load_checkpoint_to_cpu(path, arg_overrides=None, load_on_all_ranks=False):
         local_path = PathManager.get_local_path(path)
 
     with open(local_path, "rb") as f:
-        state = torch.load(f, map_location=torch.device("cpu"))
+        state = torch.load(f, map_location=torch.device("cpu"), weights_only=True)
 
     if "args" in state and state["args"] is not None and arg_overrides is not None:
         args = state["args"]
